@@ -31,7 +31,13 @@ X_test = tensorflow.keras.utils.image_dataset_from_directory(
     image_size=img_size,
     batch_size=batch_size,
 )
-''''
+
+early_stopping = tensorflow.keras.callbacks.EarlyStopping(
+    monitor='val_loss', 
+    patience=3, 
+    restore_best_weights=True
+)
+
 #====================================================CNN
 model_cnn = models.Sequential([
     layers.Input(shape=(227, 227, 3)),
@@ -43,20 +49,22 @@ model_cnn = models.Sequential([
     layers.Conv2D(64, (3, 3), activation='relu'),
     layers.MaxPooling2D((2, 2)),
     layers.Flatten(),
+    layers.Dropout(0.5), 
     layers.Dense(64, activation='relu'),
+    layers.Dropout(0.5), 
     layers.Dense(1, activation='sigmoid')
 ])
 
-model_cnn.compile(optimizer='adam',
+model_cnn.compile(optimizer=tensorflow.keras.optimizers.Adam(learning_rate=0.0001),
                            loss='binary_crossentropy',
                            metrics=['accuracy'])
+
 
 print("\n ========= CNN Architecture summary: =========\n")
 model_cnn.summary()
 
 print("Starting CNN training...")
-history_cnn = model_cnn.fit(X_train, validation_data=X_test, epochs=5)
-'''
+history_cnn = model_cnn.fit(X_train, validation_data=X_test, epochs=20, callbacks=[early_stopping])
 
 #===============================================DNN
 model_dnn = models.Sequential([
@@ -69,7 +77,7 @@ model_dnn = models.Sequential([
     layers.Dense(1, activation='sigmoid')
 ])
 
-model_dnn.compile(optimizer='adam',
+model_dnn.compile(optimizer=tensorflow.keras.optimizers.Adam(learning_rate=0.0001),
                            loss='binary_crossentropy', 
                            metrics=['accuracy'])
 
@@ -77,7 +85,7 @@ print("\n ========= DNN Architecture summary: =========\n")
 model_dnn.summary()
 
 print("Starting DNN training...")
-history_dnn = model_dnn.fit(X_train, validation_data=X_test, epochs=5)
+history_dnn = model_dnn.fit(X_train, validation_data=X_test, epochs=20, callbacks=[early_stopping])
 
 #loss
 loss_trening_dnn = history_dnn.history['loss']
